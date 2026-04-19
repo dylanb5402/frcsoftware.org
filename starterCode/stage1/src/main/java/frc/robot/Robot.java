@@ -35,8 +35,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -65,14 +64,6 @@ public class Robot extends TimedRobot {
     private final DifferentialDrive drivetrain = new DifferentialDrive(leftFX::set, rightFX::set);
     private final StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault().getStructTopic("MyPose", Pose2d.struct).publish();
 
-    /*
-     * These numbers are an example AndyMark Drivetrain with some additional weight.
-     * This is a fairly light robot.
-     * Note you can utilize results from robot characterization instead of
-     * theoretical numbers.
-     * https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/robot-
-     * characterization/introduction.html#introduction-to-robot-characterization
-     */
     private final double kGearRatio = 10.71;
     private final Distance kWheelRadius = Inches.of(3);
 
@@ -84,19 +75,9 @@ public class Robot extends TimedRobot {
         26.5, // Mass of the robot is 26.5 kg.
         kWheelRadius.in(Meters), // Robot uses 3" radius (6" diameter) wheels.
         0.546, // Distance between wheels is _ meters.
-
-        /*
-         * The standard deviations for measurement noise:
-         * x and y: 0.001 m
-         * heading: 0.001 rad
-         * l and r velocity: 0.1 m/s
-         * l and r position: 0.005 m
-         */
-        /* Uncomment the following line to add measurement noise. */
-        null // VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
+        null 
     );
 
-    private final Field2d m_field = new Field2d();
     /*
      * Creating my odometry object.
      */
@@ -145,50 +126,20 @@ public class Robot extends TimedRobot {
             rightFX.getPosition(),
             imu.getYaw());
 
-        /* Publish field pose data to read back from */
-        SmartDashboard.putData("Field", m_field);
     }
-
-    private int printCount = 0;
 
     @Override
     public void robotPeriodic() {
-        /*
-         * This will get the simulated sensor readings that we set
-         * in the previous article while in simulation, but will use
-         * real values on the robot itself.
-         */
         m_odometry.update(
             imu.getRotation2d(),
             rotationsToMeters(leftSensor.getPosition().getValue()).in(Meters),
             rotationsToMeters(rightSensor.getPosition().getValue()).in(Meters)
         );
-        m_field.setRobotPose(m_odometry.getPoseMeters());
         publisher.set(m_odometry.getPoseMeters());
-
-
-        if (++printCount >= 50) {
-            printCount = 0;
-            System.out.println("Left FX: " + leftFX.getPosition());
-            System.out.println("Right FX: " + rightFX.getPosition());
-            System.out.println("Left CANcoder: " + leftSensor.getPosition());
-            System.out.println("Right CANcoder: " + rightSensor.getPosition());
-            System.out.println("Left Forward limit: " + leftFX.getForwardLimit());
-            System.out.println("Left Reverse limit: " + leftFX.getReverseLimit());
-            System.out.println("Right Forward limit: " + rightFX.getForwardLimit());
-            System.out.println("Right Reverse limit: " + rightFX.getReverseLimit());
-            System.out.println("Pigeon2: " + imu.getYaw());
-            System.out.println();
-        }
     }
 
     @Override
     public void simulationInit() {
-        /*
-         * Set the orientation of the simulated devices relative to the robot chassis.
-         * WPILib expects +V to be forward. Specify orientations to match that behavior.
-         */
-        /* left devices are CCW+ */
         leftSim.Orientation = ChassisReference.CounterClockwise_Positive;
         leftSensSim.Orientation = ChassisReference.CounterClockwise_Positive;
         /* right devices are CW+ */
@@ -204,27 +155,10 @@ public class Robot extends TimedRobot {
         rightSim.setSupplyVoltage(RobotController.getBatteryVoltage());
         rightSensSim.setSupplyVoltage(RobotController.getBatteryVoltage());
         imuSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-
-        /*
-         * CTRE simulation is low-level, so SimState inputs
-         * and outputs are not affected by user-level inversion.
-         * However, inputs and outputs *are* affected by the mechanical
-         * orientation of the device relative to the robot chassis,
-         * as specified by the `orientation` field.
-         *
-         * WPILib expects +V to be forward. We have already configured
-         * our orientations to match this behavior.
-         */
         m_driveSim.setInputs(
             leftSim.getMotorVoltage(),
             rightSim.getMotorVoltage()
         );
-
-        /*
-         * Advance the model by 20 ms. Note that if you are running this
-         * subsystem in a separate thread or have changed the nominal
-         * timestep of TimedRobot, this value needs to match it.
-         */
         m_driveSim.update(0.02);
 
         /* Update all of our sensors. */
@@ -254,36 +188,8 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void autonomousInit() {
-    }
-
-    @Override
-    public void autonomousPeriodic() {
-    }
-
-    @Override
-    public void teleopInit() {
-    }
-
-    @Override
     public void teleopPeriodic() {
       drivetrain.arcadeDrive(-joystick.getLeftY(), -joystick.getRightX());
-    }
-
-    @Override
-    public void disabledInit() {
-    }
-
-    @Override
-    public void disabledPeriodic() {
-    }
-
-    @Override
-    public void testInit() {
-    }
-
-    @Override
-    public void testPeriodic() {
     }
 
     private Distance rotationsToMeters(Angle rotations) {
@@ -298,13 +204,6 @@ public class Robot extends TimedRobot {
         var wheelRadians = meters.in(Meters) / this.kWheelRadius.in(Meters);
         /* Then multiply by gear ratio to get rotor rotations */
         return Radians.of(wheelRadians * this.kGearRatio);
-    }
-
-    private LinearVelocity rotationsToMetersVel(AngularVelocity rotations) {
-        /* Apply gear ratio to input rotations */
-        var gearedRotations = rotations.in(RadiansPerSecond) / this.kGearRatio;
-        /* Then multiply the wheel radius by radians of rotation to get distance */
-        return this.kWheelRadius.per(Second).times(gearedRotations);
     }
 
     private AngularVelocity metersToRotationsVel(LinearVelocity meters) {
