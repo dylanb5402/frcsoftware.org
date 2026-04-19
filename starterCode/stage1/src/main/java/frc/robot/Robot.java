@@ -18,7 +18,6 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -51,8 +50,8 @@ public class Robot extends TimedRobot {
     private final Pigeon2SimState imuSim = imu.getSimState();
 
     private final DifferentialDrive drivetrain = new DifferentialDrive(leftFX::set, rightFX::set);
-    private final StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault()
-            .getStructTopic("MyPose", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> simPosePublisher = NetworkTableInstance.getDefault()
+            .getStructTopic("SimPose", Pose2d.struct).publish();
 
     private final double kGearRatio = 10.71;
     private final Distance kWheelRadius = Inches.of(3);
@@ -67,38 +66,22 @@ public class Robot extends TimedRobot {
             0.546,                      // Distance between wheels in meters.
             null);
 
-    /*
-     * Creating my odometry object. The starting position and heading of the robot
-     * on the field are both zero here, meaning we start at the field origin facing
-     * the positive X direction.
-     */
-    private final DifferentialDriveOdometry m_odometry = new DifferentialDriveOdometry(
-            imu.getRotation2d(),
-            0, 0);
-
     /**
      * This function is run when the robot is first started up and should be used
      * for any initialization code.
      */
     public Robot() {
-        StatusCode returnCode;
 
         // Configure the left motor to run counter-clockwise when given a positive
-        // output. Retry up to 5 times in case of a CAN bus error on startup.
+        // output.
         TalonFXConfiguration fxCfg = new TalonFXConfiguration();
         fxCfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        for (int i = 0; i < 5; ++i) {
-            returnCode = leftFX.getConfigurator().apply(fxCfg);
-            if (returnCode.isOK()) break;
-        }
+        leftFX.getConfigurator().apply(fxCfg);
 
         // Configure the right motor to run clockwise when given a positive output,
         // since it is physically mirrored from the left side.
         fxCfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        for (int i = 0; i < 5; ++i) {
-            returnCode = rightFX.getConfigurator().apply(fxCfg);
-            if (returnCode.isOK()) break;
-        }
+        rightFX.getConfigurator().apply(fxCfg);
 
         Pigeon2Configuration imuCfg = new Pigeon2Configuration();
         imu.getConfigurator().apply(imuCfg);
@@ -116,17 +99,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotPeriodic() {
-        /*
-         * Update odometry with the latest IMU heading and wheel positions.
-         * getPosition() returns rotor rotations, so rotationsToMeters() accounts
-         * for the gear ratio to give us the actual distance each wheel has traveled.
-         */
-        m_odometry.update(
-                imu.getRotation2d(),
-                rotationsToMeters(leftFX.getPosition().getValue()).in(Meters),
-                rotationsToMeters(rightFX.getPosition().getValue()).in(Meters));
-
-        publisher.set(m_odometry.getPoseMeters());
+        // simPosePublisher.set(m_driveSim.getPose());
     }
 
     @Override
@@ -175,6 +148,7 @@ public class Robot extends TimedRobot {
                 metersToRotationsVel(MetersPerSecond.of(m_driveSim.getRightVelocityMetersPerSecond())));
 
         imuSim.setRawYaw(m_driveSim.getHeading().getDegrees());
+        simPosePublisher.set(m_driveSim.getPose());
     }
 
     @Override
@@ -185,17 +159,6 @@ public class Robot extends TimedRobot {
          * pushing the stick forward produces a negative value by default.
          */
         drivetrain.arcadeDrive(-joystick.getLeftY(), -joystick.getRightX());
-    }
-
-    /**
-     * Converts a rotor rotation measurement into linear wheel distance.
-     * Because the TalonFX encoder sits before the gearbox, we first divide
-     * by the gear ratio to get wheel-shaft rotations, then multiply by the
-     * wheel circumference (radius × radians).
-     */
-    private Distance rotationsToMeters(Angle rotations) {
-        var gearedRadians = rotations.in(Radians) / this.kGearRatio;
-        return this.kWheelRadius.times(gearedRadians);
     }
 
     /**
