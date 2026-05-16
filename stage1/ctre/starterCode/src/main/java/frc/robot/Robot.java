@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.simulation.DrivetrainSim;
@@ -36,6 +37,8 @@ public class Robot extends TimedRobot {
     private DrivetrainSim sim = new DrivetrainSim(leftFX, rightFX, imu);
     private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake);
     private SingleFlywheelSim shooterSim = new SingleFlywheelSim(shooter);
+
+    private double autoStart;
     
     /**
      * This function is run when the robot is first started up and should be used
@@ -55,6 +58,20 @@ public class Robot extends TimedRobot {
 
         Pigeon2Configuration imuCfg = new Pigeon2Configuration();
         imu.getConfigurator().apply(imuCfg);
+    }
+
+    @Override
+    public void autonomousInit() {
+        autoStart = Timer.getFPGATimestamp();
+    }
+
+    @Override
+    public void autonomousPeriodic() {
+        if (Timer.getFPGATimestamp() - autoStart < 3.0) {
+            drivetrain.arcadeDrive(0.5, 0.0);
+        } else {
+            drivetrain.arcadeDrive(0.0, 0.0);
+        }
     }
 
     @Override
