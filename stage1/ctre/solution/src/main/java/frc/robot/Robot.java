@@ -9,7 +9,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
-
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
@@ -18,83 +17,81 @@ import frc.robot.simulation.DrivetrainSim;
 import frc.robot.simulation.SingleFlywheelSim;
 
 /**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the TimedRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the build.gradle file in the
+ * The VM is configured to automatically run this class, and to call the functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the name of this class or
+ * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
 public class Robot extends TimedRobot {
-    private final XboxController joystick = new XboxController(0);
+  private final XboxController joystick = new XboxController(0);
 
-    private final TalonFX leftFX = new TalonFX(1);
-    private final TalonFX rightFX = new TalonFX(2);
-    private final TalonFX intake = new TalonFX(3);
-    private final TalonFX shooter = new TalonFX(4);
-    private final Pigeon2 imu = new Pigeon2(0);
-    
-    private final DifferentialDrive drivetrain = new DifferentialDrive(leftFX::set, rightFX::set);
+  private final TalonFX leftFX = new TalonFX(1);
+  private final TalonFX rightFX = new TalonFX(2);
+  private final TalonFX intake = new TalonFX(3);
+  private final TalonFX shooter = new TalonFX(4);
+  private final Pigeon2 imu = new Pigeon2(0);
 
-    private DrivetrainSim sim = new DrivetrainSim(leftFX, rightFX, imu);
-    private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake, "Intake");
-    private SingleFlywheelSim shooterSim = new SingleFlywheelSim(shooter, "Shooter");
+  private final DifferentialDrive drivetrain = new DifferentialDrive(leftFX::set, rightFX::set);
 
-    private double autoStart;
-    
+  private DrivetrainSim sim = new DrivetrainSim(leftFX, rightFX, imu);
+  private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake, "Intake");
+  private SingleFlywheelSim shooterSim = new SingleFlywheelSim(shooter, "Shooter");
 
-    public Robot() {
-        TalonFXConfiguration fxCfg = new TalonFXConfiguration();
-        fxCfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        leftFX.getConfigurator().apply(fxCfg);
+  private double autoStart;
 
-        fxCfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        rightFX.getConfigurator().apply(fxCfg);
+  public Robot() {
+    TalonFXConfiguration fxCfg = new TalonFXConfiguration();
+    fxCfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    leftFX.getConfigurator().apply(fxCfg);
 
-        Pigeon2Configuration imuCfg = new Pigeon2Configuration();
-        imu.getConfigurator().apply(imuCfg);
+    fxCfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    rightFX.getConfigurator().apply(fxCfg);
+
+    Pigeon2Configuration imuCfg = new Pigeon2Configuration();
+    imu.getConfigurator().apply(imuCfg);
+  }
+
+  @Override
+  public void autonomousInit() {
+    autoStart = Timer.getFPGATimestamp();
+  }
+
+  @Override
+  public void autonomousPeriodic() {
+    if (Timer.getFPGATimestamp() - autoStart < 3.0) {
+      drivetrain.arcadeDrive(0.5, 0.0);
+    } else {
+      drivetrain.arcadeDrive(0.0, 0.0);
+    }
+  }
+
+  @Override
+  public void teleopPeriodic() {
+    drivetrain.arcadeDrive(-joystick.getLeftY(), -joystick.getRightX());
+    if (joystick.getLeftBumperButton()) {
+      intake.set(0.5);
+    } else {
+      intake.set(0.0);
     }
 
-    @Override
-    public void autonomousInit() {
-        autoStart = Timer.getFPGATimestamp();
+    if (joystick.getRightBumperButton()) {
+      shooter.set(0.5);
+    } else {
+      shooter.set(0.0);
     }
+  }
 
-    @Override
-    public void autonomousPeriodic() {
-        if (Timer.getFPGATimestamp() - autoStart < 3.0) {
-            drivetrain.arcadeDrive(0.5, 0.0);
-        } else {
-            drivetrain.arcadeDrive(0.0, 0.0);
-        }
-    }
+  @Override
+  public void simulationInit() {
+    sim.init();
+    intakeSim.init();
+    shooterSim.init();
+  }
 
-    @Override
-    public void teleopPeriodic() {
-        drivetrain.arcadeDrive(-joystick.getLeftY(), -joystick.getRightX());
-        if (joystick.getLeftBumperButton()) {
-            intake.set(0.5);
-        } else {
-            intake.set(0.0);
-        }
-
-        if (joystick.getRightBumperButton()) {
-            shooter.set(0.5);
-        } else {
-            shooter.set(0.0);
-        }
-    }
-
-    @Override
-    public void simulationInit() {
-      sim.init();
-      intakeSim.init();
-      shooterSim.init();
-    }
-
-    @Override
-    public void simulationPeriodic() {
-       sim.periodic();
-       intakeSim.periodic();
-       shooterSim.periodic();
-    }
+  @Override
+  public void simulationPeriodic() {
+    sim.periodic();
+    intakeSim.periodic();
+    shooterSim.periodic();
+  }
 }

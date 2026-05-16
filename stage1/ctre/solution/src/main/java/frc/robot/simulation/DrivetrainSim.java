@@ -7,7 +7,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.ctre.phoenix6.sim.TalonFXSimState;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -21,81 +20,75 @@ import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 
 public class DrivetrainSim {
 
-    private final TalonFX leftFx, rightFx;
-    private final Pigeon2 imu;
-    private final TalonFXSimState leftSim, rightSim;
-    private final Pigeon2SimState imuSim;
-    
-    private final double kGearRatio = 10.71;
-    private final Distance kWheelRadius = Inches.of(3);
-    private final DifferentialDrivetrainSim m_driveSim = new DifferentialDrivetrainSim(
-            DCMotor.getKrakenX60Foc(2), // 2 Kraken X60 on each side of the drivetrain.
-            kGearRatio,                 // Standard AndyMark gearing reduction.
-            2.1,                        // MOI of 2.1 kg m^2 (from CAD model).
-            26.5,                       // Mass of the robot is 26.5 kg.
-            kWheelRadius.in(Meters),    // Robot uses 3" radius (6" diameter) wheels.
-            0.546,                      // Distance between wheels in meters.
-            null);
-    private final StructPublisher<Pose2d> simPosePublisher = NetworkTableInstance.getDefault()
-            .getStructTopic("SimPose", Pose2d.struct).publish();
+  private final TalonFX leftFx, rightFx;
+  private final Pigeon2 imu;
+  private final TalonFXSimState leftSim, rightSim;
+  private final Pigeon2SimState imuSim;
 
-    public DrivetrainSim(TalonFX leftFx, TalonFX rightFx, Pigeon2 imu) {
-        this.leftFx = leftFx;
-        this.rightFx = rightFx;
-        this.imu = imu;
+  private final double kGearRatio = 10.71;
+  private final Distance kWheelRadius = Inches.of(3);
+  private final DifferentialDrivetrainSim m_driveSim =
+      new DifferentialDrivetrainSim(
+          DCMotor.getKrakenX60Foc(2), // 2 Kraken X60 on each side of the drivetrain.
+          kGearRatio, // Standard AndyMark gearing reduction.
+          2.1, // MOI of 2.1 kg m^2 (from CAD model).
+          26.5, // Mass of the robot is 26.5 kg.
+          kWheelRadius.in(Meters), // Robot uses 3" radius (6" diameter) wheels.
+          0.546, // Distance between wheels in meters.
+          null);
+  private final StructPublisher<Pose2d> simPosePublisher =
+      NetworkTableInstance.getDefault().getStructTopic("SimPose", Pose2d.struct).publish();
 
-        this.leftSim = leftFx.getSimState();
-        this.rightSim = rightFx.getSimState();
-        this.imuSim = imu.getSimState();
+  public DrivetrainSim(TalonFX leftFx, TalonFX rightFx, Pigeon2 imu) {
+    this.leftFx = leftFx;
+    this.rightFx = rightFx;
+    this.imu = imu;
 
-    }
-    
-    public void init() {
-        leftSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        rightSim.Orientation = ChassisReference.Clockwise_Positive;
-    }
+    this.leftSim = leftFx.getSimState();
+    this.rightSim = rightFx.getSimState();
+    this.imuSim = imu.getSimState();
+  }
 
-    public void periodic() {
-        leftSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-        rightSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-        imuSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+  public void init() {
+    leftSim.Orientation = ChassisReference.CounterClockwise_Positive;
+    rightSim.Orientation = ChassisReference.Clockwise_Positive;
+  }
 
-        m_driveSim.setInputs(
-                leftSim.getMotorVoltage(),
-                rightSim.getMotorVoltage());
-        m_driveSim.update(0.02);
+  public void periodic() {
+    leftSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+    rightSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+    imuSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-        leftSim.setRawRotorPosition(
-                metersToRotations(Meters.of(m_driveSim.getLeftPositionMeters())));
-        leftSim.setRotorVelocity(
-                metersToRotationsVel(MetersPerSecond.of(m_driveSim.getLeftVelocityMetersPerSecond())));
-        rightSim.setRawRotorPosition(
-                metersToRotations(Meters.of(m_driveSim.getRightPositionMeters())));
-        rightSim.setRotorVelocity(
-                metersToRotationsVel(MetersPerSecond.of(m_driveSim.getRightVelocityMetersPerSecond())));
+    m_driveSim.setInputs(leftSim.getMotorVoltage(), rightSim.getMotorVoltage());
+    m_driveSim.update(0.02);
 
-        imuSim.setRawYaw(m_driveSim.getHeading().getDegrees());
-        simPosePublisher.set(m_driveSim.getPose());
+    leftSim.setRawRotorPosition(metersToRotations(Meters.of(m_driveSim.getLeftPositionMeters())));
+    leftSim.setRotorVelocity(
+        metersToRotationsVel(MetersPerSecond.of(m_driveSim.getLeftVelocityMetersPerSecond())));
+    rightSim.setRawRotorPosition(metersToRotations(Meters.of(m_driveSim.getRightPositionMeters())));
+    rightSim.setRotorVelocity(
+        metersToRotationsVel(MetersPerSecond.of(m_driveSim.getRightVelocityMetersPerSecond())));
 
-    }
+    imuSim.setRawYaw(m_driveSim.getHeading().getDegrees());
+    simPosePublisher.set(m_driveSim.getPose());
+  }
 
-    /**
-     * Converts a linear wheel distance into rotor rotations.
-     * This is the inverse of rotationsToMeters() and is used to feed
-     * simulated wheel positions back into the TalonFX sim state.
-     */
-    private Angle metersToRotations(Distance meters) {
-        var wheelRadians = meters.in(Meters) / this.kWheelRadius.in(Meters);
-        return Radians.of(wheelRadians * this.kGearRatio);
-    }
+  /**
+   * Converts a linear wheel distance into rotor rotations. This is the inverse of
+   * rotationsToMeters() and is used to feed simulated wheel positions back into the TalonFX sim
+   * state.
+   */
+  private Angle metersToRotations(Distance meters) {
+    var wheelRadians = meters.in(Meters) / this.kWheelRadius.in(Meters);
+    return Radians.of(wheelRadians * this.kGearRatio);
+  }
 
-    /**
-     * Converts a linear wheel velocity into rotor angular velocity.
-     * Mirrors the logic of metersToRotations() but operates on velocity
-     * rather than position.
-     */
-    private AngularVelocity metersToRotationsVel(LinearVelocity meters) {
-        var wheelRadians = meters.in(MetersPerSecond) / this.kWheelRadius.in(Meters);
-        return RadiansPerSecond.of(wheelRadians * this.kGearRatio);
-    }
+  /**
+   * Converts a linear wheel velocity into rotor angular velocity. Mirrors the logic of
+   * metersToRotations() but operates on velocity rather than position.
+   */
+  private AngularVelocity metersToRotationsVel(LinearVelocity meters) {
+    var wheelRadians = meters.in(MetersPerSecond) / this.kWheelRadius.in(Meters);
+    return RadiansPerSecond.of(wheelRadians * this.kGearRatio);
+  }
 }
