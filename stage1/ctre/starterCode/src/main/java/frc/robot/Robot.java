@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.simulation.DrivetrainSim;
+import frc.robot.simulation.SingleFlywheelSim;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -27,10 +28,14 @@ public class Robot extends TimedRobot {
 
     private final TalonFX leftFX = new TalonFX(1);
     private final TalonFX rightFX = new TalonFX(2);
+    private final TalonFX intake = new TalonFX(3);
+    private final TalonFX shooter = new TalonFX(4);
     private final Pigeon2 imu = new Pigeon2(0);
     private final DifferentialDrive drivetrain = new DifferentialDrive(leftFX::set, rightFX::set);
 
     private DrivetrainSim sim = new DrivetrainSim(leftFX, rightFX, imu);
+    private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake);
+    private SingleFlywheelSim shooterSim = new SingleFlywheelSim(shooter);
     
     /**
      * This function is run when the robot is first started up and should be used
@@ -55,16 +60,30 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         drivetrain.arcadeDrive(-joystick.getLeftY(), -joystick.getRightX());
+        if (joystick.getLeftBumperButton()) {
+            intake.set(0.5);
+        } else {
+            intake.set(0.0);
+        }
+
+        if (joystick.getRightBumperButton()) {
+            shooter.set(0.5);
+        } else {
+            shooter.set(0.0);
+        }
     }
 
     @Override
     public void simulationInit() {
       sim.init();
-        
+      intakeSim.init();
+      shooterSim.init();
     }
 
     @Override
     public void simulationPeriodic() {
        sim.periodic();
+       intakeSim.periodic();
+       shooterSim.periodic();
     }
 }
