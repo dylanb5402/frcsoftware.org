@@ -36,8 +36,8 @@ public class Robot extends TimedRobot {
     private final DifferentialDrive drivetrain = new DifferentialDrive(leftFX::set, rightFX::set);
 
     private DrivetrainSim sim = new DrivetrainSim(leftFX, rightFX, imu);
-    private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake);
-    private SingleFlywheelSim shooterSim = new SingleFlywheelSim(shooter);
+    private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake, "Intake");
+    private SingleFlywheelSim shooterSim = new SingleFlywheelSim(shooter, "Shooter");
 
     private double autoStart;
     

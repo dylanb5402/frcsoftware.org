@@ -26,19 +26,20 @@ public class SingleFlywheelSim {
     private final DoublePublisher currentPub;
     private final DoublePublisher rotorPositionPub;
 
-    public SingleFlywheelSim(TalonFX motor) {
-        this(motor, DCMotor.getKrakenX60Foc(1), 1.0, 0.001);
-    }
+    private final String name;
 
-    public SingleFlywheelSim(TalonFX motor, DCMotor gearbox, double gearing, double moi) {
+    public SingleFlywheelSim(TalonFX motor, String name) {
+        this.name = name;
+        // this(motor, DCMotor.getKrakenX60Foc(1), 1.0, 0.001);
         this.motor = motor;
         this.motorSim = motor.getSimState();
+        var gearbox = DCMotor.getKrakenX60Foc(1);
         this.m_flywheelSim = new FlywheelSim(
-                LinearSystemId.createFlywheelSystem(gearbox, moi, gearing),
+                LinearSystemId.createFlywheelSystem(gearbox, 0.001, 1.0),
                 gearbox);
 
         var table = NetworkTableInstance.getDefault()
-                .getTable("FlywheelSim/Motor" + motor.getDeviceID());
+                .getTable(this.name);
         this.motorVoltagePub = table.getDoubleTopic("MotorVoltage").publish();
         this.rotorVelocityPub = table.getDoubleTopic("RotorVelocity").publish();
         this.currentPub = table.getDoubleTopic("Current").publish();
