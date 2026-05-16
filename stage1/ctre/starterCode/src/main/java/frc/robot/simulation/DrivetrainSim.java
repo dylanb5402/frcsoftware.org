@@ -28,7 +28,6 @@ public class DrivetrainSim {
     
     private final double kGearRatio = 10.71;
     private final Distance kWheelRadius = Inches.of(3);
-    /* Simulation model of the drivetrain */
     private final DifferentialDrivetrainSim m_driveSim = new DifferentialDrivetrainSim(
             DCMotor.getKrakenX60Foc(2), // 2 Kraken X60 on each side of the drivetrain.
             kGearRatio,                 // Standard AndyMark gearing reduction.
@@ -52,39 +51,20 @@ public class DrivetrainSim {
     }
     
     public void init() {
-        /*
-         * Tell each simulated TalonFX which direction is "positive" so that the
-         * simulated encoder counts match the physical motor orientation set above.
-         */
         leftSim.Orientation = ChassisReference.CounterClockwise_Positive;
         rightSim.Orientation = ChassisReference.Clockwise_Positive;
     }
 
     public void periodic() {
-         /*
-         * Simulate supply voltage for each device. In a real robot this comes from
-         * the battery; here we use WPILib's simulated battery voltage.
-         */
         leftSim.setSupplyVoltage(RobotController.getBatteryVoltage());
         rightSim.setSupplyVoltage(RobotController.getBatteryVoltage());
         imuSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-        /*
-         * Feed the voltage each motor is currently outputting into the drivetrain
-         * physics simulation, then step the simulation forward by one robot loop (20ms).
-         */
         m_driveSim.setInputs(
                 leftSim.getMotorVoltage(),
                 rightSim.getMotorVoltage());
         m_driveSim.update(0.02);
 
-        /*
-         * Push the simulated wheel positions and velocities back into the TalonFX
-         * sim states so that getPosition() and getVelocity() return realistic values.
-         * metersToRotations() converts wheel-shaft distance back to rotor rotations
-         * (multiplying by the gear ratio internally) to match what the real encoder
-         * would report.
-         */
         leftSim.setRawRotorPosition(
                 metersToRotations(Meters.of(m_driveSim.getLeftPositionMeters())));
         leftSim.setRotorVelocity(

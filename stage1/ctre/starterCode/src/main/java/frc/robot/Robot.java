@@ -32,6 +32,7 @@ public class Robot extends TimedRobot {
     private final TalonFX intake = new TalonFX(3);
     private final TalonFX shooter = new TalonFX(4);
     private final Pigeon2 imu = new Pigeon2(0);
+    
     private final DifferentialDrive drivetrain = new DifferentialDrive(leftFX::set, rightFX::set);
 
     private DrivetrainSim sim = new DrivetrainSim(leftFX, rightFX, imu);
@@ -40,19 +41,12 @@ public class Robot extends TimedRobot {
 
     private double autoStart;
     
-    /**
-     * This function is run when the robot is first started up and should be used
-     * for any initialization code.
-     */
+
     public Robot() {
-        // Configure the left motor to run counter-clockwise when given a positive
-        // output.
         TalonFXConfiguration fxCfg = new TalonFXConfiguration();
         fxCfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         leftFX.getConfigurator().apply(fxCfg);
 
-        // Configure the right motor to run clockwise when given a positive output,
-        // since it is physically mirrored from the left side.
         fxCfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         rightFX.getConfigurator().apply(fxCfg);
 
