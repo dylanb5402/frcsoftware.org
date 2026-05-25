@@ -25,6 +25,6 @@ public class MyAuto extends PeriodicOpMode {
    */
   @Override
   public void periodic() {
-    // Put custom auto code here
+    robot.drivetrain.arcadeDrive(0.5, 0.0); // Drive forward at half speed with no rotation
   }
 }
