@@ -32,8 +32,8 @@ public class Robot extends OpModeRobot {
   private SparkMax leftFollower = new SparkMax(0, 1, MotorType.kBrushless);
   private SparkMax rightLeader = new SparkMax(0, 2, MotorType.kBrushless);
   private SparkMax rightFollower = new SparkMax(0, 3, MotorType.kBrushless);
-  private SparkMax intake = new SparkMax(0, 4, MotorType.kBrushless);
-  private SparkMax shooter = new SparkMax(0, 5, MotorType.kBrushless);
+  public SparkMax intake = new SparkMax(0, 4, MotorType.kBrushless);
+  public SparkMax shooter = new SparkMax(0, 5, MotorType.kBrushless);
   private OnboardIMU imu;
 
   private DrivetrainSim drivetrainSim = new DrivetrainSim(leftLeader, rightLeader);
@@ -42,12 +42,6 @@ public class Robot extends OpModeRobot {
 
   public final DifferentialDrive drivetrain = new DifferentialDrive(leftLeader::setThrottle, rightLeader::setThrottle);
 
-
-
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
   public Robot() {
 
     var leftConfig = new SparkMaxConfig().inverted(true);

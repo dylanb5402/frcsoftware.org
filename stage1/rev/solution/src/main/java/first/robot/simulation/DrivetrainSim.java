@@ -4,24 +4,23 @@
 
 package first.robot.simulation;
 
-import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkMax;
-import org.wpilib.hardware.imu.OnboardIMU;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.networktables.DoublePublisher;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.StructPublisher;
 import org.wpilib.simulation.DifferentialDrivetrainSim;
 import org.wpilib.simulation.OnboardIMUSim;
 
 /**
- * Simulation wrapper for a differential drivetrain using REV SparkMax motor controllers and the
- * Systemcore onboard IMU. Call {@link #init()} once before enabling and {@link #periodic()} every
- * 20ms from the robot's {@code simulationPeriodic()} method.
+ * Stock-WPILib simulation for a differential drivetrain using REV SparkMax motor controllers. Uses
+ * no REV vendor sim classes -- only stock WPILib physics and IMU simulation. Motor voltages are
+ * derived from {@link SparkMax#getThrottle()} each cycle. Call {@link #init()} once and {@link
+ * #periodic()} every 20ms from {@code simulationPeriodic()}.
  */
 public class DrivetrainSim {
 
-  private SparkMaxSim leftSim, rightSim;
   private final SparkMax leftSpark, rightSpark;
 
   private final double kGearRatio = 10.71;
@@ -43,63 +42,58 @@ public class DrivetrainSim {
           .getStructTopic("SimPose", Pose2d.struct)
           .publish();
 
+  private final DoublePublisher leftPositionPub =
+      NetworkTableInstance.getDefault()
+          .getDoubleTopic("DrivetrainSim/LeftPositionMeters")
+          .publish();
+  private final DoublePublisher rightPositionPub =
+      NetworkTableInstance.getDefault()
+          .getDoubleTopic("DrivetrainSim/RightPositionMeters")
+          .publish();
+  private final DoublePublisher leftVelocityPub =
+      NetworkTableInstance.getDefault()
+          .getDoubleTopic("DrivetrainSim/LeftVelocityMPS")
+          .publish();
+  private final DoublePublisher rightVelocityPub =
+      NetworkTableInstance.getDefault()
+          .getDoubleTopic("DrivetrainSim/RightVelocityMPS")
+          .publish();
+
   /**
-   * Creates a drivetrain simulation that bridges the REV SparkMax motor controllers and the
-   * Systemcore onboard IMU with WPILib's {@link DifferentialDrivetrainSim} physics model.
+   * Creates a stock-WPILib drivetrain simulation.
    *
    * @param leftSpark the left-side SparkMax motor controller
    * @param rightSpark the right-side SparkMax motor controller
-   * @param imu the Systemcore onboard IMU
    */
   public DrivetrainSim(SparkMax leftSpark, SparkMax rightSpark) {
     this.leftSpark = leftSpark;
     this.rightSpark = rightSpark;
   }
 
-  /**
-   * Call once after construction. SparkMax inversion/orientation is handled through motor controller
-   * configuration (e.g. {@link com.revrobotics.spark.config.SparkBaseConfig#inverted}) rather than
-   * in simulation setup.
-   */
-  public void init() {
-    this.leftSim = new SparkMaxSim(leftSpark, DCMotor.getNEO(2));
-    this.rightSim = new SparkMaxSim(rightSpark, DCMotor.getNEO(2));
-  }
+  public void init() {}
 
   /**
-   * Call every 20ms from {@code simulationPeriodic()}. Reads the applied output from each
-   * SparkMaxSim (one-tick delayed from the previous iterate), feeds the resulting motor voltage into
-   * the physics model, then writes the resulting velocity and position back to the SparkMaxSim and
-   * the heading to the OnboardIMU simulation.
+   * Call every 20ms from {@code simulationPeriodic()}. Reads the throttle value from each SparkMax,
+   * converts to motor voltage, feeds into the physics model, and publishes the resulting state.
+   *
+   * <p>Caveat: only {@code set()} / {@code setThrottle()} commands are visible via {@link
+   * SparkMax#getThrottle()} in simulation. The {@code setVoltage()} method uses a CAN command that
+   * bypasses the throttle register. For voltage-mode control, convert with {@code set(voltage /
+   * 12.0)}.
    */
   public void periodic() {
-    leftSim.setBusVoltage(kBusVoltage);
-    rightSim.setBusVoltage(kBusVoltage);
-
-    double leftMotorVoltage = leftSim.getAppliedOutput() * kBusVoltage;
-    double rightMotorVoltage = rightSim.getAppliedOutput() * kBusVoltage;
+    double leftMotorVoltage = leftSpark.getThrottle() * kBusVoltage;
+    double rightMotorVoltage = rightSpark.getThrottle() * kBusVoltage;
 
     m_driveSim.setInputs(leftMotorVoltage, rightMotorVoltage);
     m_driveSim.update(0.02);
 
-    double leftRPM = metersPerSecToRPM(m_driveSim.getLeftVelocity());
-    double rightRPM = metersPerSecToRPM(m_driveSim.getRightVelocity());
-
-    leftSim.iterate(leftRPM, kBusVoltage, 0.02);
-    rightSim.iterate(rightRPM, kBusVoltage, 0.02);
-
     OnboardIMUSim.setYaw(m_driveSim.getHeading().getRadians());
 
     simPosePublisher.set(m_driveSim.getPose());
-  }
-
-  /**
-   * Converts a linear wheel velocity (m/s) into motor RPM. Uses the same wheel radius and gearing
-   * ratio as the physics simulation. The SparkMax relative encoder defaults to a velocity
-   * conversion factor of 1 (RPM); if a custom factor is configured, this method must be updated
-   * accordingly.
-   */
-  private double metersPerSecToRPM(double metersPerSecond) {
-    return metersPerSecond / kWheelRadiusMeters * kGearRatio * 60.0 / (2.0 * Math.PI);
+    leftPositionPub.set(m_driveSim.getLeftPosition());
+    rightPositionPub.set(m_driveSim.getRightPosition());
+    leftVelocityPub.set(m_driveSim.getLeftVelocity());
+    rightVelocityPub.set(m_driveSim.getRightVelocity());
   }
 }

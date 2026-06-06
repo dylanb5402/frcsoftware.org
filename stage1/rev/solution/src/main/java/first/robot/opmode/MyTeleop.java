@@ -4,41 +4,36 @@
 
 package first.robot.opmode;
 
+import org.wpilib.driverstation.NiDsXboxController;
 import org.wpilib.opmode.PeriodicOpMode;
 import org.wpilib.opmode.Teleop;
+
 import first.robot.Robot;
 
 @Teleop
 public class MyTeleop extends PeriodicOpMode {
   private final Robot robot;
+  private final NiDsXboxController xboxController = new NiDsXboxController(0);
 
-  /** The Robot instance is passed into the opmode via the constructor. */
   public MyTeleop(Robot robot) {
     this.robot = robot;
   }
 
   @Override
-  public void disabledPeriodic() {
-    /* Called periodically (on every DS packet) while the robot is disabled. */
-  }
-
-  @Override
-  public void start() {
-    /* Called once when the robot is enabled. */
-  }
-
-  @Override
   public void periodic() {
-    /* Called periodically (set time interval) while the robot is enabled. */
+    robot.drivetrain.arcadeDrive(-xboxController.getLeftY(), xboxController.getRightX());
+
+    if (xboxController.getLeftBumperButton()) {
+      robot.intake.setThrottle(1.0); 
+    } else {
+      robot.intake.setThrottle(0.0); 
+    }
+
+    if (xboxController.getRightBumperButton()) {
+      robot.shooter.setThrottle(1.0);
+    } else {
+      robot.shooter.setThrottle(0.0);
+    }
   }
 
-  @Override
-  public void end() {
-    /* Called when the robot is disabled (after previously being enabled). */
-  }
-
-  @Override
-  public void close() {
-    /* Called when the opmode is de-selected / no additional methods will be called. */
-  }
 }

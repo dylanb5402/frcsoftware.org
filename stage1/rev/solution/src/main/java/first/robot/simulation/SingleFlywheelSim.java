@@ -4,7 +4,6 @@
 
 package first.robot.simulation;
 
-import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkMax;
 import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.system.Models;
@@ -13,14 +12,14 @@ import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.simulation.FlywheelSim;
 
 /**
- * Simulation wrapper for a single flywheel driven by a REV SparkMax motor controller. Call {@link
- * #init()} once before enabling and {@link #periodic()} every 20ms from the robot's {@code
- * simulationPeriodic()} method.
+ * Stock-WPILib simulation for a single flywheel driven by a REV SparkMax motor controller. Uses no
+ * REV vendor sim classes -- only stock WPILib physics. Motor voltage is derived from {@link
+ * SparkMax#getThrottle()} each cycle. Call {@link #init()} once and {@link #periodic()} every 20ms
+ * from {@code simulationPeriodic()}.
  */
 public class SingleFlywheelSim {
 
   private final SparkMax motor;
-  private SparkMaxSim motorSim;
 
   private final FlywheelSim m_flywheelSim;
 
@@ -28,14 +27,14 @@ public class SingleFlywheelSim {
   private final DoublePublisher rotorVelocityPub;
   private final DoublePublisher currentPub;
   private final DoublePublisher rotorPositionPub;
+  private double rotorPositionRad;
 
   private static final double kBusVoltage = 12.0;
 
   private final String name;
 
   /**
-   * Creates a flywheel simulation that bridges a REV SparkMax motor controller with WPILib's {@link
-   * FlywheelSim} physics model.
+   * Creates a stock-WPILib flywheel simulation.
    *
    * @param motor the SparkMax motor controller
    * @param name the NetworkTables table name for publishing telemetry
@@ -55,36 +54,30 @@ public class SingleFlywheelSim {
     this.rotorPositionPub = table.getDoubleTopic("RotorPosition").publish();
   }
 
-  /**
-   * Call once after construction. SparkMax inversion/orientation is handled through motor controller
-   * configuration rather than in simulation setup.
-   */
-  public void init() {
-    this.motorSim = new SparkMaxSim(motor, DCMotor.getNEO(1));
-  }
+  public void init() {}
 
   /**
-   * Call every 20ms from {@code simulationPeriodic()}. Reads the applied output from the SparkMaxSim
-   * (one-tick delayed from the previous iterate), feeds the resulting motor voltage into the
-   * flywheel physics model, then writes the resulting velocity back to the SparkMaxSim.
+   * Call every 20ms from {@code simulationPeriodic()}. Reads the throttle value from the SparkMax,
+   * converts to motor voltage, feeds into the flywheel physics model, and publishes the resulting
+   * state.
+   *
+   * <p>Caveat: only {@code set()} / {@code setThrottle()} commands are visible via {@link
+   * SparkMax#getThrottle()} in simulation. The {@code setVoltage()} method uses a CAN command that
+   * bypasses the throttle register. For voltage-mode control, convert with {@code set(voltage /
+   * 12.0)}.
    */
   public void periodic() {
-    motorSim.setBusVoltage(kBusVoltage);
+    double motorVoltage = motor.getThrottle() * kBusVoltage;
 
-    double motorVoltage = motorSim.getAppliedOutput() * kBusVoltage;
     m_flywheelSim.setInputVoltage(motorVoltage);
     m_flywheelSim.update(0.02);
 
-    double velocityRadPerSec = m_flywheelSim.getAngularVelocity();
-    double velocityRPM = velocityRadPerSec * 60.0 / (2.0 * Math.PI);
-
-    motorSim.iterate(velocityRPM, kBusVoltage, 0.02);
-
-    double positionRad = motorSim.getPosition() * 2.0 * Math.PI;
+    double radPerSec = m_flywheelSim.getAngularVelocity();
+    rotorPositionRad += radPerSec * 0.02;
 
     motorVoltagePub.set(motorVoltage);
-    rotorVelocityPub.set(velocityRadPerSec);
+    rotorVelocityPub.set(radPerSec);
     currentPub.set(m_flywheelSim.getCurrentDraw());
-    rotorPositionPub.set(positionRad);
+    rotorPositionPub.set(rotorPositionRad);
   }
 }
