@@ -13,12 +13,6 @@ import org.wpilib.networktables.StructPublisher;
 import org.wpilib.simulation.DifferentialDrivetrainSim;
 import org.wpilib.simulation.OnboardIMUSim;
 
-/**
- * Stock-WPILib simulation for a differential drivetrain using REV SparkMax motor controllers. Uses
- * no REV vendor sim classes -- only stock WPILib physics and IMU simulation. Motor voltages are
- * derived from {@link SparkMax#getThrottle()} each cycle. Call {@link #init()} once and {@link
- * #periodic()} every 20ms from {@code simulationPeriodic()}.
- */
 public class DrivetrainSim {
 
   private final SparkMax leftSpark, rightSpark;
@@ -76,26 +70,11 @@ public class DrivetrainSim {
           .getDoubleTopic("DrivetrainSim/RightCurrentAmps")
           .publish();
 
-  /**
-   * Creates a stock-WPILib drivetrain simulation.
-   *
-   * @param leftSpark the left-side SparkMax motor controller
-   * @param rightSpark the right-side SparkMax motor controller
-   */
   public DrivetrainSim(SparkMax leftSpark, SparkMax rightSpark) {
     this.leftSpark = leftSpark;
     this.rightSpark = rightSpark;
   }
 
-  /**
-   * Call every 20ms from {@code simulationPeriodic()}. Reads the throttle value from each SparkMax,
-   * converts to motor voltage, feeds into the physics model, and publishes the resulting state.
-   *
-   * <p>Caveat: only {@code set()} / {@code setThrottle()} commands are visible via {@link
-   * SparkMax#getThrottle()} in simulation. The {@code setVoltage()} method uses a CAN command that
-   * bypasses the throttle register. For voltage-mode control, convert with {@code set(voltage /
-   * 12.0)}.
-   */
   public void periodic() {
     double leftMotorVoltage = leftSpark.getThrottle() * kBusVoltage;
     double rightMotorVoltage = rightSpark.getThrottle() * kBusVoltage;

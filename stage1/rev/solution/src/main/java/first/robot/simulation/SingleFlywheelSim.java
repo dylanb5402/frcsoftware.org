@@ -11,12 +11,6 @@ import org.wpilib.networktables.DoublePublisher;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.simulation.FlywheelSim;
 
-/**
- * Stock-WPILib simulation for a single flywheel driven by a REV SparkMax motor controller. Uses no
- * REV vendor sim classes -- only stock WPILib physics. Motor voltage is derived from {@link
- * SparkMax#getThrottle()} each cycle. Call {@link #init()} once and {@link #periodic()} every 20ms
- * from {@code simulationPeriodic()}.
- */
 public class SingleFlywheelSim {
 
   private final SparkMax motor;
@@ -33,12 +27,6 @@ public class SingleFlywheelSim {
 
   private final String name;
 
-  /**
-   * Creates a stock-WPILib flywheel simulation.
-   *
-   * @param motor the SparkMax motor controller
-   * @param name the NetworkTables table name for publishing telemetry
-   */
   public SingleFlywheelSim(SparkMax motor, String name) {
     this.name = name;
     this.motor = motor;
@@ -54,16 +42,6 @@ public class SingleFlywheelSim {
     this.rotorPositionPub = table.getDoubleTopic("RotorPosition").publish();
   }
 
-  /**
-   * Call every 20ms from {@code simulationPeriodic()}. Reads the throttle value from the SparkMax,
-   * converts to motor voltage, feeds into the flywheel physics model, and publishes the resulting
-   * state.
-   *
-   * <p>Caveat: only {@code set()} / {@code setThrottle()} commands are visible via {@link
-   * SparkMax#getThrottle()} in simulation. The {@code setVoltage()} method uses a CAN command that
-   * bypasses the throttle register. For voltage-mode control, convert with {@code set(voltage /
-   * 12.0)}.
-   */
   public void periodic() {
     double motorVoltage = motor.getThrottle() * kBusVoltage;
 

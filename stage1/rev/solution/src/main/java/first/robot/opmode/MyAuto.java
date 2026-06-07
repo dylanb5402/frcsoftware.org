@@ -13,9 +13,8 @@ import first.robot.Robot;
 @Autonomous(name = "My Auto", group = "Group 1")
 public class MyAuto extends PeriodicOpMode {
   private final Robot robot;
-  private double startTime;
+  private Timer timer = new Timer();
 
-  /** The Robot instance is passed into the opmode via the constructor. */
   public MyAuto(Robot robot) {
     this.robot = robot;
   }
@@ -23,15 +22,15 @@ public class MyAuto extends PeriodicOpMode {
 
   @Override
   public void start() {
-    startTime = Timer.getTimestamp();
+    timer.restart();
   }
 
   @Override
   public void periodic() {
-    if (Timer.getTimestamp() - startTime < 4.0) {
-      robot.drivetrain.arcadeDrive(0.5, 0.0); // Drive forward at half speed with no rotation
+    if (timer.hasElapsed(4)) {
+      robot.drivetrain.arcadeDrive(0.0, 0.0); // Stop the robot after 4 seconds
     } else {
-      robot.drivetrain.arcadeDrive(0.0, 0.0); // Stop the drivetrain after 2 seconds
+      robot.drivetrain.arcadeDrive(0.5, 0.0); // Drive forward at half speed with no rotation
     }
   }
 }
