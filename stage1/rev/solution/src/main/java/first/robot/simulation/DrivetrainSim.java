@@ -59,6 +59,23 @@ public class DrivetrainSim {
           .getDoubleTopic("DrivetrainSim/RightVelocityMPS")
           .publish();
 
+  private final DoublePublisher leftVoltagePub =
+      NetworkTableInstance.getDefault()
+          .getDoubleTopic("DrivetrainSim/LeftMotorVoltage")
+          .publish();
+  private final DoublePublisher rightVoltagePub =
+      NetworkTableInstance.getDefault()
+          .getDoubleTopic("DrivetrainSim/RightMotorVoltage")
+          .publish();
+  private final DoublePublisher leftCurrentPub =
+      NetworkTableInstance.getDefault()
+          .getDoubleTopic("DrivetrainSim/LeftCurrentAmps")
+          .publish();
+  private final DoublePublisher rightCurrentPub =
+      NetworkTableInstance.getDefault()
+          .getDoubleTopic("DrivetrainSim/RightCurrentAmps")
+          .publish();
+
   /**
    * Creates a stock-WPILib drivetrain simulation.
    *
@@ -69,8 +86,6 @@ public class DrivetrainSim {
     this.leftSpark = leftSpark;
     this.rightSpark = rightSpark;
   }
-
-  public void init() {}
 
   /**
    * Call every 20ms from {@code simulationPeriodic()}. Reads the throttle value from each SparkMax,
@@ -95,5 +110,9 @@ public class DrivetrainSim {
     rightPositionPub.set(m_driveSim.getRightPosition());
     leftVelocityPub.set(m_driveSim.getLeftVelocity());
     rightVelocityPub.set(m_driveSim.getRightVelocity());
+    leftVoltagePub.set(leftMotorVoltage);
+    rightVoltagePub.set(rightMotorVoltage);
+    leftCurrentPub.set(m_driveSim.getLeftCurrentDraw());
+    rightCurrentPub.set(m_driveSim.getRightCurrentDraw());
   }
 }

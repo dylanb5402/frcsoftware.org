@@ -53,14 +53,6 @@ public class Robot extends OpModeRobot {
     rightFollower.configure(rightConfig.follow(rightLeader), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-
-  @Override
-  public void simulationInit() {
-    drivetrainSim.init();
-    intakeSim.init();
-    shooterSim.init();
-  }
-
   @Override
   public void simulationPeriodic() {
     drivetrainSim.periodic();

@@ -54,8 +54,6 @@ public class SingleFlywheelSim {
     this.rotorPositionPub = table.getDoubleTopic("RotorPosition").publish();
   }
 
-  public void init() {}
-
   /**
    * Call every 20ms from {@code simulationPeriodic()}. Reads the throttle value from the SparkMax,
    * converts to motor voltage, feeds into the flywheel physics model, and publishes the resulting
