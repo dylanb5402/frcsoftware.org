@@ -34,7 +34,7 @@ public class Robot extends OpModeRobot {
   private SparkMax rightFollower = new SparkMax(0, 3, MotorType.kBrushless);
   public SparkMax intake = new SparkMax(0, 4, MotorType.kBrushless);
   public SparkMax shooter = new SparkMax(0, 5, MotorType.kBrushless);
-  private OnboardIMU imu;
+  private OnboardIMU imu = new OnboardIMU(MountOrientation.FLAT);
 
   private DrivetrainSim drivetrainSim = new DrivetrainSim(leftLeader, rightLeader);
   private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake, "Intake");
@@ -51,8 +51,6 @@ public class Robot extends OpModeRobot {
     var rightConfig = new SparkMaxConfig().inverted(false);
     rightLeader.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightFollower.configure(rightConfig.follow(rightLeader), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    imu = new OnboardIMU(MountOrientation.FLAT);
   }
 
 
