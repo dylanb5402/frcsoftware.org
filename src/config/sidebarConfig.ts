@@ -61,6 +61,7 @@ export const sidebarSections: Record<string, SidebarSection[]> = {
         { label: 'Required Tools', slug: 'getting-started/required-tools' },
         { label: 'VS Code Overview', slug: 'getting-started/vscode-overview' },
         { label: 'Forking and Cloning', slug: 'getting-started/forking-and-cloning' },
+        { label: 'Intro to Java', slug: 'intro-to-java/stage-overview' }
       ],
     },
   ],
