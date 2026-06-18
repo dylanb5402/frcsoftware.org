@@ -30,39 +30,33 @@ public class DrivetrainSim {
       0.546, // Distance between wheels in meters.
       null);
 
-  private final StructPublisher<Pose2d> simPosePublisher = NetworkTableInstance.getDefault()
-      .getStructTopic("SimPose", Pose2d.struct)
-      .publish();
+  private final StructPublisher<Pose2d> simPosePublisher;
 
-  private final DoublePublisher leftPositionPub = NetworkTableInstance.getDefault()
-      .getDoubleTopic("DrivetrainSim/LeftPositionMeters")
-      .publish();
-  private final DoublePublisher rightPositionPub = NetworkTableInstance.getDefault()
-      .getDoubleTopic("DrivetrainSim/RightPositionMeters")
-      .publish();
-  private final DoublePublisher leftVelocityPub = NetworkTableInstance.getDefault()
-      .getDoubleTopic("DrivetrainSim/LeftVelocityMPS")
-      .publish();
-  private final DoublePublisher rightVelocityPub = NetworkTableInstance.getDefault()
-      .getDoubleTopic("DrivetrainSim/RightVelocityMPS")
-      .publish();
+  private final DoublePublisher leftPositionPub;
+  private final DoublePublisher rightPositionPub;
+  private final DoublePublisher leftVelocityPub;
+  private final DoublePublisher rightVelocityPub;
 
-  private final DoublePublisher leftVoltagePub = NetworkTableInstance.getDefault()
-      .getDoubleTopic("DrivetrainSim/LeftMotorVoltage")
-      .publish();
-  private final DoublePublisher rightVoltagePub = NetworkTableInstance.getDefault()
-      .getDoubleTopic("DrivetrainSim/RightMotorVoltage")
-      .publish();
-  private final DoublePublisher leftCurrentPub = NetworkTableInstance.getDefault()
-      .getDoubleTopic("DrivetrainSim/LeftCurrentAmps")
-      .publish();
-  private final DoublePublisher rightCurrentPub = NetworkTableInstance.getDefault()
-      .getDoubleTopic("DrivetrainSim/RightCurrentAmps")
-      .publish();
+  private final DoublePublisher leftVoltagePub;
+  private final DoublePublisher rightVoltagePub;
+  private final DoublePublisher leftCurrentPub;
+  private final DoublePublisher rightCurrentPub;
 
   public DrivetrainSim(SparkMax leftSpark, SparkMax rightSpark) {
     this.leftSpark = leftSpark;
     this.rightSpark = rightSpark;
+
+    var table = NetworkTableInstance.getDefault().getTable("Drivetrain");
+    this.simPosePublisher = table.getStructTopic("Pose", Pose2d.struct).publish();
+
+    this.leftPositionPub = table.getDoubleTopic("LeftPositionMeters").publish();
+    this.rightPositionPub = table.getDoubleTopic("RightPositionMeters").publish();
+    this.leftVelocityPub = table.getDoubleTopic("LeftVelocityMPS").publish();
+    this.rightVelocityPub = table.getDoubleTopic("RightVelocityMPS").publish();
+    this.leftVoltagePub = table.getDoubleTopic("LeftMotorVoltage").publish();
+    this.rightVoltagePub = table.getDoubleTopic("RightMotorVoltage").publish();
+    this.leftCurrentPub = table.getDoubleTopic("LeftCurrentAmps").publish();
+    this.rightCurrentPub = table.getDoubleTopic("RightCurrentAmps").publish();
   }
 
   public void periodic() {

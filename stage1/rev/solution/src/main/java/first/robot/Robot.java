@@ -22,11 +22,13 @@ public class Robot extends OpModeRobot {
   private SparkMax leftFollower = new SparkMax(0, 1, MotorType.kBrushless);
   private SparkMax rightLeader = new SparkMax(0, 2, MotorType.kBrushless);
   private SparkMax rightFollower = new SparkMax(0, 3, MotorType.kBrushless);
-  public SparkMax intake = new SparkMax(0, 4, MotorType.kBrushless);
-  public SparkMax shooter = new SparkMax(0, 5, MotorType.kBrushless);
+
   private OnboardIMU imu = new OnboardIMU(MountOrientation.FLAT);
 
   private DrivetrainSim drivetrainSim = new DrivetrainSim(leftLeader, rightLeader);
+  public SparkMax intake = new SparkMax(0, 4, MotorType.kBrushless);
+  public SparkMax shooter = new SparkMax(0, 5, MotorType.kBrushless);
+
   private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake, "Intake");
   private SingleFlywheelSim shooterSim = new SingleFlywheelSim(shooter, "Shooter");
 
