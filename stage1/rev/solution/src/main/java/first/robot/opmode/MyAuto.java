@@ -4,11 +4,10 @@
 
 package first.robot.opmode;
 
+import first.robot.Robot;
 import org.wpilib.opmode.Autonomous;
 import org.wpilib.opmode.PeriodicOpMode;
 import org.wpilib.system.Timer;
-
-import first.robot.Robot;
 
 @Autonomous(name = "My Auto", group = "Group 1")
 public class MyAuto extends PeriodicOpMode {
@@ -18,7 +17,6 @@ public class MyAuto extends PeriodicOpMode {
   public MyAuto(Robot robot) {
     this.robot = robot;
   }
-
 
   @Override
   public void start() {

@@ -4,11 +4,10 @@
 
 package first.robot.opmode;
 
+import first.robot.Robot;
 import org.wpilib.driverstation.NiDsXboxController;
 import org.wpilib.opmode.PeriodicOpMode;
 import org.wpilib.opmode.Teleop;
-
-import first.robot.Robot;
 
 @Teleop
 public class MyTeleop extends PeriodicOpMode {
@@ -24,9 +23,9 @@ public class MyTeleop extends PeriodicOpMode {
     robot.drivetrain.arcadeDrive(-xboxController.getLeftY(), xboxController.getRightX());
 
     if (xboxController.getLeftBumperButton()) {
-      robot.intake.setThrottle(1.0); 
+      robot.intake.setThrottle(1.0);
     } else {
-      robot.intake.setThrottle(0.0); 
+      robot.intake.setThrottle(0.0);
     }
 
     if (xboxController.getRightBumperButton()) {
@@ -35,5 +34,4 @@ public class MyTeleop extends PeriodicOpMode {
       robot.shooter.setThrottle(0.0);
     }
   }
-
 }

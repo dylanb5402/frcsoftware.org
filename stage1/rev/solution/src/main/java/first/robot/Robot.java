@@ -4,20 +4,17 @@
 
 package first.robot;
 
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import first.robot.simulation.DrivetrainSim;
+import first.robot.simulation.SingleFlywheelSim;
 import org.wpilib.drive.DifferentialDrive;
 import org.wpilib.framework.OpModeRobot;
 import org.wpilib.hardware.imu.OnboardIMU;
 import org.wpilib.hardware.imu.OnboardIMU.MountOrientation;
-
-import com.revrobotics.PersistMode;
-import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkMax;
-
-import first.robot.simulation.DrivetrainSim;
-import first.robot.simulation.SingleFlywheelSim;
-
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
 
 public class Robot extends OpModeRobot {
 
@@ -33,17 +30,20 @@ public class Robot extends OpModeRobot {
   private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake, "Intake");
   private SingleFlywheelSim shooterSim = new SingleFlywheelSim(shooter, "Shooter");
 
-  public final DifferentialDrive drivetrain = new DifferentialDrive(leftLeader::setThrottle, rightLeader::setThrottle);
+  public final DifferentialDrive drivetrain =
+      new DifferentialDrive(leftLeader::setThrottle, rightLeader::setThrottle);
 
   public Robot() {
 
     var leftConfig = new SparkMaxConfig().inverted(true);
     leftLeader.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    leftFollower.configure(leftConfig.follow(leftLeader), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    leftFollower.configure(
+        leftConfig.follow(leftLeader), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     var rightConfig = new SparkMaxConfig().inverted(false);
     rightLeader.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    rightFollower.configure(rightConfig.follow(rightLeader), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    rightFollower.configure(
+        rightConfig.follow(rightLeader), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   @Override

@@ -21,54 +21,44 @@ public class DrivetrainSim {
   private final double kWheelRadiusMeters = 0.0762; // 3 inches
   private static final double kBusVoltage = 12.0;
 
-  private final DifferentialDrivetrainSim m_driveSim =
-      new DifferentialDrivetrainSim(
-          DCMotor.getNEO(2), // 2 NEO motors on each side of the drivetrain.
-          kGearRatio,
-          2.1, // MOI of 2.1 kg m^2 (from CAD model).
-          26.5, // Mass of the robot is 26.5 kg.
-          kWheelRadiusMeters, // Robot uses 3" radius (6" diameter) wheels.
-          0.546, // Distance between wheels in meters.
-          null);
+  private final DifferentialDrivetrainSim m_driveSim = new DifferentialDrivetrainSim(
+      DCMotor.getNEO(2), // 2 NEO motors on each side of the drivetrain.
+      kGearRatio,
+      2.1, // MOI of 2.1 kg m^2 (from CAD model).
+      26.5, // Mass of the robot is 26.5 kg.
+      kWheelRadiusMeters, // Robot uses 3" radius (6" diameter) wheels.
+      0.546, // Distance between wheels in meters.
+      null);
 
-  private final StructPublisher<Pose2d> simPosePublisher =
-      NetworkTableInstance.getDefault()
-          .getStructTopic("SimPose", Pose2d.struct)
-          .publish();
+  private final StructPublisher<Pose2d> simPosePublisher = NetworkTableInstance.getDefault()
+      .getStructTopic("SimPose", Pose2d.struct)
+      .publish();
 
-  private final DoublePublisher leftPositionPub =
-      NetworkTableInstance.getDefault()
-          .getDoubleTopic("DrivetrainSim/LeftPositionMeters")
-          .publish();
-  private final DoublePublisher rightPositionPub =
-      NetworkTableInstance.getDefault()
-          .getDoubleTopic("DrivetrainSim/RightPositionMeters")
-          .publish();
-  private final DoublePublisher leftVelocityPub =
-      NetworkTableInstance.getDefault()
-          .getDoubleTopic("DrivetrainSim/LeftVelocityMPS")
-          .publish();
-  private final DoublePublisher rightVelocityPub =
-      NetworkTableInstance.getDefault()
-          .getDoubleTopic("DrivetrainSim/RightVelocityMPS")
-          .publish();
+  private final DoublePublisher leftPositionPub = NetworkTableInstance.getDefault()
+      .getDoubleTopic("DrivetrainSim/LeftPositionMeters")
+      .publish();
+  private final DoublePublisher rightPositionPub = NetworkTableInstance.getDefault()
+      .getDoubleTopic("DrivetrainSim/RightPositionMeters")
+      .publish();
+  private final DoublePublisher leftVelocityPub = NetworkTableInstance.getDefault()
+      .getDoubleTopic("DrivetrainSim/LeftVelocityMPS")
+      .publish();
+  private final DoublePublisher rightVelocityPub = NetworkTableInstance.getDefault()
+      .getDoubleTopic("DrivetrainSim/RightVelocityMPS")
+      .publish();
 
-  private final DoublePublisher leftVoltagePub =
-      NetworkTableInstance.getDefault()
-          .getDoubleTopic("DrivetrainSim/LeftMotorVoltage")
-          .publish();
-  private final DoublePublisher rightVoltagePub =
-      NetworkTableInstance.getDefault()
-          .getDoubleTopic("DrivetrainSim/RightMotorVoltage")
-          .publish();
-  private final DoublePublisher leftCurrentPub =
-      NetworkTableInstance.getDefault()
-          .getDoubleTopic("DrivetrainSim/LeftCurrentAmps")
-          .publish();
-  private final DoublePublisher rightCurrentPub =
-      NetworkTableInstance.getDefault()
-          .getDoubleTopic("DrivetrainSim/RightCurrentAmps")
-          .publish();
+  private final DoublePublisher leftVoltagePub = NetworkTableInstance.getDefault()
+      .getDoubleTopic("DrivetrainSim/LeftMotorVoltage")
+      .publish();
+  private final DoublePublisher rightVoltagePub = NetworkTableInstance.getDefault()
+      .getDoubleTopic("DrivetrainSim/RightMotorVoltage")
+      .publish();
+  private final DoublePublisher leftCurrentPub = NetworkTableInstance.getDefault()
+      .getDoubleTopic("DrivetrainSim/LeftCurrentAmps")
+      .publish();
+  private final DoublePublisher rightCurrentPub = NetworkTableInstance.getDefault()
+      .getDoubleTopic("DrivetrainSim/RightCurrentAmps")
+      .publish();
 
   public DrivetrainSim(SparkMax leftSpark, SparkMax rightSpark) {
     this.leftSpark = leftSpark;
