@@ -304,8 +304,8 @@ For multiple images, use the Slides component instead.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/frcsoftware/frcsoftware.github.io.git
-   cd frcsoftware.github.io
+   git clone https://github.com/frcsoftware/frcsoftware.org
+   cd frcsoftware.org
    ```
 
 2. **Install dependencies**
