@@ -23,15 +23,15 @@ public class MyTeleop extends PeriodicOpMode {
     robot.drivetrain.arcadeDrive(-xboxController.getLeftY(), xboxController.getRightX());
 
     if (xboxController.getLeftBumperButton()) {
-      robot.intake.setThrottle(1.0);
+      robot.intakeLauncher.setThrottle(1.0);
     } else {
-      robot.intake.setThrottle(0.0);
+      robot.intakeLauncher.setThrottle(0.0);
     }
 
     if (xboxController.getRightBumperButton()) {
-      robot.shooter.setThrottle(1.0);
+      robot.feeder.setThrottle(1.0);
     } else {
-      robot.shooter.setThrottle(0.0);
+      robot.feeder.setThrottle(0.0);
     }
   }
 }

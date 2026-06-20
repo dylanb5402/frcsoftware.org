@@ -26,14 +26,13 @@ public class Robot extends OpModeRobot {
   private OnboardIMU imu = new OnboardIMU(MountOrientation.FLAT);
 
   private DrivetrainSim drivetrainSim = new DrivetrainSim(leftLeader, rightLeader);
-  public SparkMax intake = new SparkMax(0, 4, MotorType.kBrushless);
-  public SparkMax shooter = new SparkMax(0, 5, MotorType.kBrushless);
+  public SparkMax intakeLauncher = new SparkMax(0, 4, MotorType.kBrushless);
+  public SparkMax feeder = new SparkMax(0, 5, MotorType.kBrushless);
 
-  private SingleFlywheelSim intakeSim = new SingleFlywheelSim(intake, "Intake");
-  private SingleFlywheelSim shooterSim = new SingleFlywheelSim(shooter, "Shooter");
+  private SingleFlywheelSim intakeLauncherSim = new SingleFlywheelSim(intakeLauncher, "IntakeLauncher");
+  private SingleFlywheelSim feederSim = new SingleFlywheelSim(feeder, "Feeder");
 
-  public final DifferentialDrive drivetrain =
-      new DifferentialDrive(leftLeader::setThrottle, rightLeader::setThrottle);
+  public final DifferentialDrive drivetrain = new DifferentialDrive(leftLeader::setThrottle, rightLeader::setThrottle);
 
   public Robot() {
 
@@ -51,7 +50,7 @@ public class Robot extends OpModeRobot {
   @Override
   public void simulationPeriodic() {
     drivetrainSim.periodic();
-    intakeSim.periodic();
-    shooterSim.periodic();
+    intakeLauncherSim.periodic();
+    feederSim.periodic();
   }
 }
