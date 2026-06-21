@@ -46,8 +46,6 @@ A community-driven learning course and resource hub for FRC software. Built with
 Styled callout boxes with optional collapse functionality.
 
 ```mdx
-import Aside from '@components/Aside.astro';
-
 <Aside type="tip">This is a tip!</Aside>
 <Aside type="note" title="Custom Title">Content here</Aside>
 <Aside type="caution" collapse>Collapsible content</Aside>
@@ -62,8 +60,6 @@ Image and video slideshow with lightbox support. Images are automatically optimi
 **Format:** Each slide is an image immediately followed by its caption:
 
 ```mdx
-import Slides from '@components/Slides.astro';
-
 <Slides>
   ![alt text](/path/to/image1.webp)
   Caption for slide 1
@@ -111,8 +107,6 @@ import YouTube from '@components/YouTube.astro';
 Styled button link component.
 
 ```mdx
-import LinkButton from '@components/LinkButton.astro';
-
 <LinkButton href="/path">Button Text</LinkButton>
 <LinkButton href="/path" center>Centered Button</LinkButton>
 <LinkButton href="/path" blank={false}>Internal Link (no new tab)</LinkButton>

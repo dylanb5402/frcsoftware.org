@@ -4,13 +4,14 @@ import remarkGlossary from './src/plugins/remark-glossary';
 import remarkCenter from './src/plugins/remark-center';
 import remarkFigure from './src/plugins/remark-figure';
 import remarkImageAttributes from './src/plugins/remark-image-attributes';
+import { remarkMdxGlobalImports } from './src/plugins/remark-mdx-global-imports.ts';
 
 export default defineConfig({
   site: 'https://frcsoftware.org',
   prefetch: true,
 
   markdown: {
-    remarkPlugins: [remarkCenter, remarkFigure, remarkGlossary, remarkImageAttributes],
+    remarkPlugins: [remarkCenter, remarkFigure, remarkGlossary, remarkImageAttributes, remarkMdxGlobalImports],
     rehypePlugins: [],
   },
 
