@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Build and Deploy to GitHub Pages
 
 on:
     push:
@@ -12,7 +12,7 @@ permissions:
     id-token: write
 
 concurrency:
-    group: pages
+    group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -20,10 +20,28 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout your repository using git
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
-            - name: Install, build, and upload your site
-              uses: withastro/action@v5
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+              with:
+                  version: 10.16.0
+
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build site
+              run: pnpm build
+
+            - uses: actions/upload-pages-artifact@v5
+              with:
+                  path: dist/
 
     deploy:
         if: github.ref == 'refs/heads/main' && github.repository == 'frcsoftware/frcsoftware.org'
@@ -35,4 +53,4 @@ jobs:
         steps:
             - name: Deploy to GitHub Pages
               id: deployment
-              uses: actions/deploy-pages@v4
+              uses: actions/deploy-pages@v5
